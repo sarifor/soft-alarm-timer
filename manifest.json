@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Soft Alarm Timer",
+  "version": "1.0",
+  "description": "A cozy minimal timer with soft alarm",
+  "permissions": ["storage", "alarms"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

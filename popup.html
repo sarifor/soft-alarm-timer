@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- 메인 타이머 화면 -->
+  <div id="main" class="container">
+    <div id="display">00:00</div>
+    <div class="time-inputs">
+      <input type="number" id="minutes" value="15" placeholder="min">
+      <span>:</span>
+      <input type="number" id="seconds" value="0" placeholder="sec">
+    </div>
+    <div class="buttons">
+      <button id="startBtn">Start</button>
+      <button id="stopBtn">Stop</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <!-- 타이머 완료 팝업 -->
+  <div id="finishPopup" class="container hidden">
+    <div class="finish-icon">🕊</div>
+    <div class="finish-text">Time's up!</div>
+    <div class="buttons">
+      <button id="restartBtn">Restart</button>
+      <button id="dismissBtn">Dismiss</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

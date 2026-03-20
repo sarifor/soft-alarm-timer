@@ -1,0 +1,145 @@
+/* cozy minimal 스타일: 자연스러운 미 + 독특함 한 스푼 */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 220px;
+  padding: 24px 20px;
+  font-family: 'Outfit', sans-serif;
+  background: #f9f6f1;
+  border: 1px solid #e8e4dc;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 타이머 디스플레이 */
+#display {
+  font-size: 44px;
+  font-weight: 600;
+  color: #3a3a3a;
+  letter-spacing: 2px;
+}
+
+/* 시간 입력 */
+.time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.time-inputs input {
+  width: 54px;
+  padding: 10px 6px;
+  border: 1.5px solid #d4cfc6;
+  border-radius: 8px;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  background: #fff;
+  color: #3a3a3a;
+  transition: border-color 0.2s;
+}
+
+.time-inputs input:focus {
+  outline: none;
+  border-color: #8b9dc3;
+}
+
+.time-inputs span {
+  font-size: 18px;
+  color: #999;
+  font-weight: 600;
+}
+
+/* 버튼 */
+.buttons {
+  display: flex;
+  gap: 6px;
+}
+
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+#startBtn {
+  background: #3a3a3a;
+  color: #f9f6f1;
+}
+
+#startBtn:hover {
+  background: #555;
+}
+
+#stopBtn {
+  background: transparent;
+  color: #3a3a3a;
+  border: 1.5px solid #d4cfc6;
+}
+
+#stopBtn:hover {
+  border-color: #aaa;
+}
+
+#resetBtn {
+  background: transparent;
+  color: #3a3a3a;
+  border: 1.5px solid #d4cfc6;
+}
+
+#resetBtn:hover {
+  border-color: #aaa;
+}
+
+/* 완료 팝업 (인라인) */
+#restartBtn {
+  background: #3a3a3a;
+  color: #f9f6f1;
+}
+
+#dismissBtn {
+  background: transparent;
+  color: #3a3a3a;
+  border: 1.5px solid #d4cfc6;
+}
+
+.finish-icon {
+  font-size: 42px;
+}
+
+.finish-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3a3a3a;
+  letter-spacing: 1px;
+}
