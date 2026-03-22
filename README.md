@@ -18,29 +18,35 @@
 ## 기술 스택
 
 ### 개발 환경
+
 - Chrome Extension Manifest V3
 
 ### 프론트엔드
+
 - HTML
 - CSS (아늑하면서 심플한(cozy minimal) 디자인)
 - JavaScript
 
 ### 저장소 & 알람
+
 - chrome.storage.local API
 - chrome.alarms API
 
 ## 설치 및 사용 방법
 
 ### 전제 조건
+
 - Chrome 브라우저가 설치되어 있어야 합니다.
 
 ### 설치
+
 1. Chrome 브라우저에서 `chrome://extensions/` 접속
 2. 우측 상단 "개발자 모드" 활성화
 3. "압축해제된 확장 프로그램을 로드합니다" 클릭
 4. 이 프로젝트 폴더 선택
 
 ### 사용 방법
+
 1. Chrome 툴바에서 확장 프로그램 아이콘 클릭
 2. 분/초 입력 (화살표로 0↔60 순환 가능)
 3. Start 버튼 클릭
@@ -58,9 +64,15 @@
 - 자연스러운 float 애니메이션
 
 ## 동작 화면
+
 ![동작](action.gif)
 
 ## 참고사항
+
 - chrome.alarms는 정확한 시간에 알람을 발생시킵니다.
 - 브라우저를 완전히 종료하면 타이머가 유지되지 않습니다.
 - 기본값은 15분으로 설정되어 있습니다.
+
+## License
+
+MIT License
