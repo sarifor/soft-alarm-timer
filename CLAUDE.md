@@ -1,7 +1,66 @@
 # CLAUDE.md
 
-For every project, write a detailed HOW-IT-WORKS.md file that explains the whole project in plain language.
+프로젝트 관련 지시사항, 규칙, 선호도를 여기에 작성하세요.
+Claude Code가 이 파일을 자동으로 읽고 참고합니다.
 
-Explain the technical architecture, the structure of the codebase and how the various parts are connected, the technologies used, why we made these technical decisions, and lessons I can learn from it (this should include the bugs we ran into and how we fixed them, potential pitfalls and how to avoid them in the future, new technologies used, how good engineers think and work, best practices, etc).
+## 자동 업데이트 규칙
 
-It should be very engaging to read; don't make it sound like boring technical documentation/textbook. Where appropriate, use analogies and anecdotes to make it more understandable and memorable.
+### CLAUDE-CODE-TIPS.md
+- 모든 작업 중에 Claude Code의 새로운 팁, 기능, 설정을 배울 때마다 자동으로 **CLAUDE-CODE-TIPS.md** 업데이트
+- 예: 음성 모드, 단축키, 설정, 언어 지원, 기능 발견 등
+- 형식: 카테고리별로 정리
+- **중요**: 각 팁마다 이 프로젝트에서 어떻게 활용했는지 간단한 예시 포함 (한두 줄 수준으로 간결하게)
+
+### HOW-IT-WORKS.md
+- 모든 작업 중에 프로젝트에 대해 배운 것들을 자동으로 **HOW-IT-WORKS.md** 업데이트
+- 포함할 내용:
+  - 기술 아키텍처 및 구조
+  - 파일/폴더 구성과 연결 방식
+  - 기술 결정 사항과 이유
+  - 버그 해결 과정, 방법, 교훈
+  - 주의사항 및 함정
+  - 새로운 기술 학습
+  - 좋은 엔지니어링 실천 방법
+- 스타일: 재미있고 쉽게 읽을 수 있도록, 비유와 일화 활용
+
+## 작업 성격별 모델/Effort 제안 프로세스
+
+사용자가 작업을 요청하면, 현재 모델/effort를 확인하고 필요시 전환을 제안합니다.
+
+### 작업 성격별 권장 설정
+
+| 작업 성격 | 설명 | 권장 모델 | 권장 Effort |
+|----------|------|---------|----------|
+| **HOW-IT-WORKS.md 작성/업데이트** | 프로젝트 전체 구조, 아키텍처 분석 | Opus | high |
+| **새 기능 추가** | 복잡한 로직 구현 | Sonnet | high |
+| **버그 분석/수정** | 명확한 문제의 해결 | Haiku | low |
+| **문서/주석 작성** | README, 가이드, 코드 주석 | Haiku | low |
+| **코드 리뷰/분석** | 기존 코드 분석, 개선 제안 | Sonnet | high |
+| **파일 생성/편집** | 단순 파일 추가/수정 | Haiku | low |
+| **의존성/환경 설정** | package.json, 설정 파일 관리 | Haiku | low |
+| **테스트/검증** | 테스트 작성, 버그 검증 | Haiku | low |
+
+### 프로세스
+
+1. 사용자가 "뭐뭐 해줘"라고 요청
+2. 현재 모델/effort 확인
+3. 작업 성격 판단 → 권장 설정 확인
+4. **필요 시** 사용자에게 전환 제안
+   - 예: "지금 Haiku/low인데, 이 작업은 Sonnet/high를 권장합니다. 바꿔주시겠어요?"
+5. 사용자가 `/model`, `/effort` 커맨드로 변경
+6. 변경된 설정으로 작업 진행
+
+## 모델/Effort 명시 규칙
+
+각 작업 단계마다 현재 사용 중인 모델과 effort를 다음 형식으로 명시:
+
+```
+{작업 설명} — [Model: {모델명} | Effort: {level}]
+```
+
+**예시**:
+- `HOW-IT-WORKS.md 작성 — [Model: Opus | Effort: high]`
+- `버그 수정 진행 — [Model: Haiku | Effort: low]`
+- `새 기능 구현 시작 — [Model: Sonnet | Effort: high]`
+
+**목적**: 현재 어떤 설정으로 작업하고 있는지 투명하게 표시
