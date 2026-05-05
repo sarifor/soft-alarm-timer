@@ -3,7 +3,7 @@
 ## 소개
 
 심플하고 귀여운 타이머 Chrome 확장 프로그램입니다.<br/>
-탭을 이동해도 타이머가 유지되고, 시간이 다 되면 아이콘이 반짝반짝 알려줍니다.
+탭을 이동해도 타이머가 유지되고, 시간이 다 되면 아이콘이 반짝이며 부드러운 벨소리가 납니다.
 
 ## 주요 기능
 
@@ -11,8 +11,9 @@
 |--------|------|
 | ⏱️ 타이머 설정 | 분/초 단위로 원하는 시간 설정 (0-60 순환) |
 | ▶️ 시작/정지/리셋 | 간단한 3버튼 컨트롤 |
-| 🔔 완료 알림 | 시간이 다 되면 아이콘에 ♡ 뱃지가 파스텔 색상으로 깜빡임 |
+| 🩷 완료 알림 | 시간이 다 되면 아이콘에 ♡ 뱃지가 파스텔 색상으로 깜빡임 |
 | 🔄 탭 이동 유지 | 팝업을 닫거나 다른 탭으로 이동해도 타이머 계속 실행 |
+| 🔔 알람 사운드 | 타이머 완료 시 부드러운 벨소리 자동 재생 (Web Audio API) |
 
 ## 기술 스택
 
@@ -21,6 +22,9 @@
 - [Claude Code](https://claude.ai/code)
   - 코딩: Claude Sonnet 4.6 (thinking: medium)
   - 문서 작성: Claude Sonnet 4.6 (thinking: medium)
+  - 문서 리뷰: [GPT-5.3-Codex-Spark](https://openai.com/ko-KR/index/introducing-gpt-5-3-codex-spark/)
+    - effort(thinking)는 불명.
+    - 'Codex에게 리뷰시켜 보자' 요청하니, `codex:rescue` 스킬이 자율 선택함.
 
 ### 프론트엔드
 - HTML
@@ -32,6 +36,7 @@
 - chrome.storage.local
 - chrome.alarms
 - chrome.runtime
+- chrome.offscreen
 
 ## 설치 및 사용 방법
 
@@ -52,7 +57,7 @@
 2. 분/초 입력 (화살표로 0↔60 순환 가능)
 3. Start 버튼 클릭
 4. 팝업 닫고 다른 작업 해도 OK
-5. 시간 되면 아이콘에 ♡ 깜빡임!
+5. 시간 되면 아이콘에 ♡ 깜빡이며, 부드러운 벨소리가 남
 6. 아이콘 클릭 → Restart 또는 Dismiss 선택
 
 ## 디자인 콘셉트
