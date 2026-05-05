@@ -3,8 +3,7 @@
 ## 소개
 
 심플하고 귀여운 타이머 Chrome 확장 프로그램입니다.<br/>
-탭을 이동해도 타이머가 유지되고, 시간이 다 되면 아이콘이 반짝반짝 알려줍니다.<br/>
-이 프로젝트는 코드부터 이 README.md 파일까지, 모두 클로드 코드가 만들었습니다.
+탭을 이동해도 타이머가 유지되고, 시간이 다 되면 아이콘이 반짝반짝 알려줍니다.
 
 ## 주요 기능
 
@@ -18,19 +17,21 @@
 ## 기술 스택
 
 ### 개발 환경
-
-- Chrome Extension Manifest V3
+- Windows 11 Pro
+- [Claude Code](https://claude.ai/code)
+  - 코딩: Claude xx (thinking: xx)
+  - 문서 작성: Claude xx (thinking: xx)
 
 ### 프론트엔드
-
 - HTML
 - CSS (아늑하면서 심플한(cozy minimal) 디자인)
 - JavaScript
 
-### 저장소 & 알람
-
-- chrome.storage.local API
-- chrome.alarms API
+### Chrome Extension API
+*※규격: Chrome Extension Manifest V3 (MV3)*
+- chrome.storage.local
+- chrome.alarms
+- chrome.runtime
 
 ## 설치 및 사용 방법
 
