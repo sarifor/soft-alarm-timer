@@ -1,17 +1,82 @@
-# Soft Alarm Timer - 프로젝트 완전 해부
+# HOW-IT-WORKS.md <!-- omit in toc -->
+
+> 이 문서는 soft-alarm-timer의 기술 아키텍처, 설계 결정, 버그 해결 경험을 기록합니다.<br/>
+> 작업 중 변경된 점들, 새롭게 배운 것들이 있다면 즉시 갱신됩니다.
 
 ---
 
-## 이 프로젝트는 뭘 하는 건가요?
+## 목차 <!-- omit in toc -->
+
+- [한 줄 요약](#한-줄-요약)
+- [아키텍처](#아키텍처)
+- [파일/폴더 구성](#파일폴더-구성)
+  - [전체 구조도](#전체-구조도)
+  - [background.js vs offscreen.js — 헷갈리기 쉬운 둘의 차이](#backgroundjs-vs-offscreenjs--헷갈리기-쉬운-둘의-차이)
+  - [각 파일의 역할을 비유로 설명하면...](#각-파일의-역할을-비유로-설명하면)
+- [코드 깊이 들여다보기](#코드-깊이-들여다보기)
+  - [핵심 문제: "팝업 닫으면 타이머가 멈춰요"](#핵심-문제-팝업-닫으면-타이머가-멈춰요)
+  - [메시지 통신: popup ↔ background](#메시지-통신-popup--background)
+  - [아이콘 깜빡임: 아늑하면서 심플한(cozy minimal)](#아이콘-깜빡임-아늑하면서-심플한cozy-minimal)
+- [삽질의 역사: 우리가 겪은 문제들](#삽질의-역사-우리가-겪은-문제들)
+  - [삽질 1: "팝업 닫으면 타이머가 안 돼요"](#삽질-1-팝업-닫으면-타이머가-안-돼요)
+  - [삽질 2: "Start 누르면 팝업이 닫혀요"](#삽질-2-start-누르면-팝업이-닫혀요)
+  - [삽질 3: "소리는 finish.js에 넣으면 되겠지?"](#삽질-3-소리는-finishjs에-넣으면-되겠지)
+  - [삽질 4: "Offscreen API, 이번엔 됩니다"](#삽질-4-offscreen-api-이번엔-됩니다)
+  - [삽질 5: "0에서 아래 화살표 누르면 60이 안 돼요"](#삽질-5-0에서-아래-화살표-누르면-60이-안-돼요)
+- [Web Audio API: 파일 없이 소리 만들기](#web-audio-api-파일-없이-소리-만들기)
+- [Manifest V3의 현실](#manifest-v3의-현실)
+  - [Service Worker의 한계](#service-worker의-한계)
+  - [그럼 V3는 개악된 건가?](#그럼-v3는-개악된-건가)
+  - [Offscreen API: 이론 vs 현실](#offscreen-api-이론-vs-현실)
+- [영리한 설계 결정들](#영리한-설계-결정들)
+  - [1. endTime을 저장하는 이유](#1-endtime을-저장하는-이유)
+  - [2. 메시지에 endTime 직접 포함](#2-메시지에-endtime-직접-포함)
+  - [3. 이중 체크 (Belt and Suspenders)](#3-이중-체크-belt-and-suspenders)
+- [엔지니어처럼 생각하기](#엔지니어처럼-생각하기)
+  - ["동작하는 코드"보다 "이해되는 코드"](#동작하는-코드보다-이해되는-코드)
+  - [실패를 빠르게, 자주](#실패를-빠르게-자주)
+- [다음 단계로 가고 싶다면?](#다음-단계로-가고-싶다면)
+- [마무리](#마무리)
+
+---
+
+## 한 줄 요약
 
 "25분 뽀모도로 타이머 맞춰놓고, 다른 탭에서 작업하다가 시간 다 되면 알려주면 좋겠다..."
 
 그런데 대부분의 타이머 확장 프로그램은 팝업을 닫으면 타이머도 같이 사라집니다. <br/>
-이 프로젝트는 **팝업을 닫아도 타이머가 계속 돌아가고**, 시간이 다 되면 **아이콘이 반짝반짝** 알려줍니다.
+이 프로젝트는 **팝업을 닫아도 타이머가 계속 돌아가고**, 시간이 다 되면 **아이콘이 반짝이며 소리로** 알려줍니다.
 
 ---
 
-## 기술 아키텍처: 레고 블록처럼 이해하기
+## 아키텍처
+
+```
+사용자 입력 (분/초 설정 → Start 클릭)
+       │
+       ▼
+┌─────────────────┐   endTime 계산 → chrome.storage.local 저장
+│   popup.js      │──────────────────────────────────────────→ background.js에 메시지
+└─────────────────┘
+       │
+       ▼
+┌─────────────────┐   chrome.alarms.create('timer', {when: endTime})
+│  background.js  │──→ 타이머 완료 시: isFinished=true, 배지 깜빡임, offscreen 생성
+└─────────────────┘
+       │
+       ▼
+┌─────────────────┐   Web Audio API (사인파 880Hz, 2초 감쇠)
+│  offscreen.js   │──→ 재생 완료 → 'offscreen-done' 메시지 전송
+└─────────────────┘
+       │
+       ▼
+  background.js → closeDocument()
+  사용자: 아이콘 클릭 → popup.js → Dismiss 또는 Restart
+```
+
+---
+
+## 파일/폴더 구성
 
 ### 전체 구조도
 
@@ -22,9 +87,27 @@ soft-alarm-timer/
 ├── popup.html         ← 사용자가 보는 화면 (뼈대)
 ├── popup.css          ← 아늑하면서 심플한(cozy minimal) 스타일링
 ├── popup.js           ← 팝업의 두뇌
-├── finish.html/css/js ← 타이머 완료 시 화면 (현재 미사용)
+├── offscreen.html     ← 화면엔 안 보이는 오디오 재생 전용 페이지
+├── offscreen.js       ← 알람 사운드 생성 (Web Audio API)
+├── action.gif         ← README에 쓰이는 데모 GIF
+├── notes/             ← 제작 과정 메모 (앱 실행에는 불필요)
+├── .gitignore         ← git 추적 제외 파일/폴더 목록 (앱 실행에는 불필요)
+├── CLAUDE.md          ← AI 어시스턴트 작업 규칙 (앱 실행에는 불필요)
 └── README.md          ← 프로젝트 설명서
 ```
+
+### background.js vs offscreen.js — 헷갈리기 쉬운 둘의 차이
+
+둘 다 화면에 안 보이는 곳에서 돌아가지만, 역할과 환경이 다릅니다.
+
+| | `background.js` | `offscreen.js` |
+|---|---|---|
+| 실행 환경 | Service Worker (DOM 없음) | 숨겨진 HTML 페이지 (DOM 있음) |
+| 역할 | 타이머 감지, 알람 관리, 배지 깜빡임, 메시지 라우팅 | 오디오 재생 전담 |
+| 수명 | 이벤트 있을 때마다 Chrome이 깨움. 단, 할 일이 없으면 Chrome이 강제로 꺼버리는데, 이때 배지 깜빡임(setInterval)도 같이 사라져 깜빡임이 중간에 멈출 수 있음 | 소리 재생할 때만 생성 → 완료 후 닫힘 |
+| 왜 분리? | 팝업(`popup.js`)은 사용자가 닫으면 사라짐. **팝업이 닫혀도 타이머를 유지하려면 Chrome이 별도로 살려두는 Service Worker가 필요.** 단, 창(탭)이 없어서 소리는 못 내고 offscreen.js에 위임 | **Service Worker는 창이 없어서 소리를 못 냄. offscreen.js는 소리 재생을 위한 "숨겨진 창" 역할.** background.js가 "지금 소리 틀어"라고 문서를 생성하는 순간, offscreen.js는 추가 지시 없이 로드되자마자 바로 재생 시작 |
+
+한 줄 요약: **`background.js`는 총괄 관리자, `offscreen.js`는 소리만 담당하는 심부름꾼.**
 
 ### 각 파일의 역할을 비유로 설명하면...
 
@@ -69,7 +152,7 @@ chrome.runtime.sendMessage({ action: 'startTimer', endTime: endTime });
 chrome.alarms.create('timer', { when: msg.endTime });
 ```
 
-`chrome.alarms`는 브라우저 레벨에서 알람을 관리합니다. <br/>
+`chrome.alarms`는 **브라우저 레벨**에서 알람을 관리합니다. <br/>
 팝업이 닫혀도, 심지어 확장 프로그램 팝업을 한 번도 안 열어도, 지정한 시간에 정확히 알람이 발생합니다.
 
 ### 메시지 통신: popup ↔ background
@@ -112,10 +195,10 @@ blinkInterval = setInterval(() => {
 
 ### 삽질 1: "팝업 닫으면 타이머가 안 돼요"
 
-**시도 1: setInterval** → 팝업 닫으면 끝<br/>
-**시도 2: chrome.alarms** → 최소 30초 제한이 있어서 짧은 타이머 불가<br/>
-**시도 3: Offscreen API** → 작동 안 함 (Chrome 버전/환경 문제 추정)<br/>
-**시도 4: 별도 창 열기** → 작동은 하지만 새까만 창이 뜸<br/>
+시도 1: setInterval → 팝업 닫으면 끝<br/>
+시도 2: chrome.alarms → 최소 30초 제한이 있어서 짧은 타이머 불가<br/>
+시도 3: Offscreen API → 작동 안 함 (Chrome 버전/환경 문제 추정)<br/>
+시도 4: 별도 창 열기 → 작동은 하지만 새까만 창이 뜸<br/>
 **최종 해결: chrome.alarms의 `when` 파라미터**
 
 ```javascript
@@ -145,7 +228,37 @@ setTimeout(() => {
 
 (결국 이 방식도 폐기하고 chrome.alarms만 사용)
 
-### 삽질 3: "0에서 아래 화살표 누르면 60이 안 돼요"
+### 삽질 3: "소리는 finish.js에 넣으면 되겠지?"
+
+`finish.html`이라는 파일이 있으니 당연히 거기에 소리 코드를 넣었습니다. 근데 소리가 안 납니다.
+
+알고 보니 실제 완료 화면은 `finish.html`이 아니라 `popup.html` 안의 `#finishPopup` div였습니다. `finish.html`은 프로젝트에 존재하지만 현재 플로우에서 열리지 않는 **유령 파일**이었던 것.
+
+**교훈**: 코드를 넣기 전에 그 파일이 실제로 실행되는지 먼저 확인하세요.
+
+→ `finish.html`, `finish.css`, `finish.js`는 결국 완전 미사용 확인 후 프로젝트에서 삭제했습니다.
+
+### 삽질 4: "Offscreen API, 이번엔 됩니다"
+
+**삽질 1**에 "Offscreen API → 작동 안 함"이라고 적혀 있는데... 이번에 성공했습니다.
+
+Service Worker는 DOM이 없어서 Web Audio API를 직접 쓸 수 없습니다. 그래서 **Offscreen Document**를 생성해서 거기서 소리를 재생했습니다.
+
+```
+background.js (Service Worker, DOM 없음)
+    ↓ createDocument()
+offscreen.html (숨겨진 페이지, DOM 있음)
+    → Web Audio API 사용 가능
+    → 소리 재생 완료 → 'offscreen-done' 메시지 전송
+    ↓
+background.js → closeDocument()
+```
+
+핵심은 `reasons: ['AUDIO_PLAYBACK']`입니다. 이 이유를 명시해야 Chrome이 오디오 재생을 허용합니다.
+
+**이전 실패의 원인 추정**: Chrome 버전이나 reason 설정이 달랐을 가능성이 높습니다.
+
+### 삽질 5: "0에서 아래 화살표 누르면 60이 안 돼요"
 
 HTML `<input type="number">`에 `min="0" max="60"`을 넣으면, 브라우저가 범위를 벗어나는 것을 막습니다.
 
@@ -158,6 +271,26 @@ input.addEventListener('input', () => {
   if (val < 0) input.value = 60;
 });
 ```
+
+---
+
+## Web Audio API: 파일 없이 소리 만들기
+
+`.mp3` 파일 없이 코드로 벨소리를 생성했습니다.
+
+```javascript
+const osc = ctx.createOscillator(); // 음파 생성기
+const gain = ctx.createGain();       // 볼륨 조절기
+
+osc.type = 'sine';         // 부드러운 사인파
+osc.frequency.value = 880; // A5 음 (880Hz)
+
+// 0.5에서 시작해서 2초에 걸쳐 0에 가깝게 감쇠
+gain.gain.setValueAtTime(0.5, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
+```
+
+처음엔 크게, 점점 작아지는 "띵~" 소리입니다. 파일 크기 0, 외부 리소스 없음.
 
 ---
 
@@ -305,10 +438,9 @@ blinkInterval = setInterval(() => {
 
 ## 다음 단계로 가고 싶다면?
 
-1. **소리 알림 추가** → Web Audio API 또는 Audio 엘리먼트
-2. **뽀모도로 모드** → 작업 25분 + 휴식 5분 자동 반복
-3. **통계 기능** → 오늘 몇 번 타이머를 완료했는지
-4. **다크 모드** → CSS 변수 + prefers-color-scheme
+1. **뽀모도로 모드** → 작업 25분 + 휴식 5분 자동 반복
+2. **통계 기능** → 오늘 몇 번 타이머를 완료했는지
+3. **다크 모드** → CSS 변수 + prefers-color-scheme
 
 ---
 
@@ -319,7 +451,3 @@ Chrome 확장 프로그램 개발은 "왜 이게 안 되지?"의 연속입니다
 
 하지만 그 제약 안에서 해결책을 찾아가는 과정이 엔지니어링입니다. <br/>
 `chrome.alarms`의 `when` 파라미터 하나로 모든 문제가 해결되었을 때의 기쁨... 직접 경험해보세요!
-
----
-
-*이 문서는 Claude Code가 작성했습니다.*
