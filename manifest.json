@@ -3,7 +3,7 @@
   "name": "Soft Alarm Timer",
   "version": "1.0",
   "description": "A cozy minimal timer with soft alarm",
-  "permissions": ["storage", "alarms"],
+  "permissions": ["storage", "alarms", "offscreen"],
   "action": {
     "default_popup": "popup.html"
   },

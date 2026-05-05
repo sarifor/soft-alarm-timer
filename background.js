@@ -29,6 +29,18 @@ const stopBlink = () => {
   chrome.action.setBadgeText({ text: '' });
 };
 
+// 알람 사운드 재생 (offscreen document)
+const playAlarmSound = async () => {
+  if (await chrome.offscreen.hasDocument()) {
+    await chrome.offscreen.closeDocument();
+  }
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['AUDIO_PLAYBACK'],
+    justification: 'Play alarm sound when timer completes'
+  });
+};
+
 // 알람 리스너 - 타이머 완료 시
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'timer') {
@@ -38,6 +50,14 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       isFinished: true
     });
     startBlink();
+    await playAlarmSound();
+  }
+});
+
+// offscreen 재생 완료 시 닫기
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.action === 'offscreen-done') {
+    chrome.offscreen.closeDocument();
   }
 });
 
@@ -45,8 +65,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.action === 'startTimer') {
     stopBlink();
+    chrome.offscreen.hasDocument().then(has => { if (has) chrome.offscreen.closeDocument(); });
     if (msg.endTime) {
-      // 정확한 종료 시간에 알람 설정
       chrome.alarms.create('timer', { when: msg.endTime });
     }
   }
@@ -61,6 +81,7 @@ chrome.runtime.onMessage.addListener(async (msg) => {
 
   if (msg.action === 'dismiss') {
     stopBlink();
+    chrome.offscreen.hasDocument().then(has => { if (has) chrome.offscreen.closeDocument(); });
   }
 
   return true;

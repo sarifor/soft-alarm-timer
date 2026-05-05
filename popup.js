@@ -1,4 +1,5 @@
 const $ = id => document.getElementById(id);
+
 const display = $('display');
 const minutesInput = $('minutes');
 const secondsInput = $('seconds');
@@ -109,7 +110,7 @@ $('resetBtn').addEventListener('click', async () => {
   update();
 });
 
-// Restart
+// Restart (in finish popup)
 $('restartBtn').addEventListener('click', async () => {
   const data = await chrome.storage.local.get(['duration']);
   const sec = data.duration || 300;
