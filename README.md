@@ -19,8 +19,8 @@
 ### 개발 환경
 - Windows 11 Pro
 - [Claude Code](https://claude.ai/code)
-  - 코딩: Claude xx (thinking: xx)
-  - 문서 작성: Claude xx (thinking: xx)
+  - 코딩: Claude Sonnet 4.6 (thinking: medium)
+  - 문서 작성: Claude Sonnet 4.6 (thinking: medium)
 
 ### 프론트엔드
 - HTML
